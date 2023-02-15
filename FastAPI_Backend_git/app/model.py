@@ -15,27 +15,25 @@ class PostSchema(BaseModel):
 
 
 class UserSchema(BaseModel):
-    fullname: str = Field(...)
-    email: EmailStr = Field(...)
+    username: str = Field(...) 
     password: str = Field(...)
 
     class Config:
         schema_extra = {
             "example": {
-                "fullname": "Joe Doe",
-                "email": "joe@xyz.com",
+                "username": "Joe Doe", 
                 "password": "any"
             }
         }
 
 class UserLoginSchema(BaseModel):
-    email: EmailStr = Field(...)
+    username: str = Field(...)
     password: str = Field(...)
 
     class Config:
         schema_extra = {
             "example": {
-                "email": "joe@xyz.com",
+                "username": "joe@xyz.com",
                 "password": "any"
             }
         }

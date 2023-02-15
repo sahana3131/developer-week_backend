@@ -1,0 +1,5 @@
+FastAPI_Backend_git/__pycache__
+FastAPI_Backend_git/app/__pycache__
+FastAPI_Backend_git/venv
+FastAPI_Backend_git/app/helpers/__pycache__/
+FastAPI_Backend_git/app/auth/__pycache__/

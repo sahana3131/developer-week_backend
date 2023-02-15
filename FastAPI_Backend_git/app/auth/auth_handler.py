@@ -1,18 +1,27 @@
 # This file is responsible for signing , encoding , decoding and returning JWTS
 import time
 from typing import Dict
+from passlib.context import CryptContext 
 
 import jwt
 from decouple import config
 
 
-JWT_SECRET = config("secret")
-JWT_ALGORITHM = config("algorithm")
+JWT_SECRET = "secret"
+JWT_ALGORITHM = 'HS256'
 
+pwd_context = CryptContext(schemes=['bcrypt'] , deprecated ='auto')
 
+def get_password_hash(password):
+    print("password",password)
+    return pwd_context.hash(password) 
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password) 
+    
 def token_response(token: str):
     return {
-        "access_token": token
+        "token": token
     }
 
 # function used for signing the JWT string
