@@ -53,11 +53,11 @@ github_client_secret = '6a996f48c85b58803ccbd4674fdd87bc468b195f'
 
 ''' ====================== MYSQL Cloud Connection ======================'''
 conn = pymysql.connect(
-    host='db-mysql-nyc1-90916-do-user-13185754-0.b.db.ondigitalocean.com',
-    user='doadmin',
-    password='AVNS_7-uHJW2hWzJLqGwXdoE',
-    port = 25060,
-    database='defaultdb'
+    host='****',
+    user='****',
+    password='*****',
+    port = '****',
+    database='***'
 )
 
 def main():
