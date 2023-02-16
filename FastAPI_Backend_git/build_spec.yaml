@@ -4,6 +4,11 @@ timeoutInSeconds: 1000
 shell: bash
 
 steps:
+ -  type: Command
+    name: "Change directory"
+    command: |
+      cd FastAPI_Backend_git
+    timeoutInSeconds: 1000
   - type: Command
     name: "Install dependencies"
     command: |
