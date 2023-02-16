@@ -4,35 +4,29 @@ timeoutInSeconds: 1000
 shell: bash
 
 steps:
- -  type: Command
+  - type: Command
     name: "Change directory"
     command: |
       cd FastAPI_Backend_git
-    timeoutInSeconds: 1000
   - type: Command
     name: "Install dependencies"
     command: |
       pip install -r requirements.txt
-    timeoutInSeconds: 1000
   - type: Command
     name: "Test Script"
     command: |
       python3 test-script.py
-    timeoutInSeconds: 1000
   - type: Command
     name: "Build Docker Image"
     command: |
       docker build -t $REPOSITORY_URI:latest .
-    timeoutInSeconds: 1000
   - type: Command
     name: "Login to Docker"
     command: |
       docker login -u  $USERNAME -p $PASSWORD hyd.ocir.io
       docker tag REPOSITORY_URI:latest ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
 
-    timeoutInSeconds: 1000
   - type: Command
     name: "Push Docker Image"
     command: |
       docker push ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
-    timeoutInSeconds: 1000 
