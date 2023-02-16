@@ -1,12 +1,26 @@
-version: 0.2
-phases:
-pre_build:
-commands:
-- pip install -r requirements.txt
-build:
-commands:
-- python3 test-script.py
-artifacts:
-files:
-- build/**/*
-base-directory: build
+version: 0.1
+component: build
+timeoutInSeconds: 1000
+shell: bash
+
+steps:
+  - type: Command
+    name: "Install dependencies"
+    command: |
+      pip install -r requirements.txt
+    timeoutInSeconds: 1000
+  - type: Command
+    name: "Test Script"
+    command: |
+      python3 test-script.py
+    timeoutInSeconds: 1000
+  - type: Command
+    name: "Build Docker Image"
+    command: |
+      docker build -t $REPOSITORY_URI:latest .
+    timeoutInSeconds: 1000
+  - type: Command
+    name: "Push Docker Image"
+    command: |
+      docker push $REPOSITORY_URI:latest
+    timeoutInSeconds: 1000 
