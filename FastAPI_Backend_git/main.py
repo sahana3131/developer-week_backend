@@ -48,16 +48,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-github_client_id = '****'
-github_client_secret = '****'
+github_client_id = '***'
+github_client_secret = '***'
 
 ''' ====================== MYSQL Cloud Connection ======================'''
 conn = pymysql.connect(
-    host='****',
-    user='****',
-    password='*****',
-    port = '****',
-    database='***'
+    host='*****',
+    user='***',
+    password='****',
+    port = '***',
+    database='****'
 )
 
 def main():
