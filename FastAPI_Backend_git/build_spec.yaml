@@ -5,28 +5,22 @@ shell: bash
 
 steps:
   - type: Command
-    name: "Change directory"
-    command: |
-      cd FastAPI_Backend_git
-  - type: Command
     name: "Install dependencies"
     command: |
-      pip install -r requirements.txt
+      pip install -r FastAPI_Backend_git/requirements.txt
   - type: Command
     name: "Test Script"
     command: |
-      python3 test-script.py
+      python3 FastAPI_Backend_git/test-script.py
   - type: Command
     name: "Build Docker Image"
     command: |
+      cd FastAPI_Backend_git
       docker build -t $REPOSITORY_URI:latest .
   - type: Command
-    name: "Login to Docker"
+    name: "Login to Docker and Push Docker Image"
     command: |
+      cd FastAPI_Backend_git
       docker login -u  $USERNAME -p $PASSWORD hyd.ocir.io
       docker tag REPOSITORY_URI:latest ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
-
-  - type: Command
-    name: "Push Docker Image"
-    command: |
       docker push ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
