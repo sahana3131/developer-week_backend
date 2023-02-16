@@ -41,9 +41,10 @@ app.add_middleware(
 )
 
 
-github_client_id = '4ec3dda0c792c1664242'
-github_client_secret = '710fee9e6229467422fa412bc603a5b43d8a0164'
-openai.api_key = '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'
+
+github_client_id = '***'
+github_client_secret = '***'
+openai.api_key = '***'
 
 
 giturl = [
@@ -68,12 +69,13 @@ users = []
 
 ''' ====================== MYSQL Cloud Connection ======================'''
 conn = pymysql.connect(
-    host='db-mysql-nyc1-90916-do-user-13185754-0.b.db.ondigitalocean.com',
-    user='doadmin',
-    password='AVNS_7-uHJW2hWzJLqGwXdoE',
-    port = 25060,
-    database='defaultdb'
+    host='*****',
+    user='***',
+    password='****',
+    port = '***',
+    database='****'
 )
+
 def main():
     try:
         cursor = conn.cursor()
