@@ -48,16 +48,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-github_client_id = '***'
-github_client_secret = '***'
+github_client_id = '4ec3dda0c792c1664242'
+github_client_secret = '710fee9e6229467422fa412bc603a5b43d8a0164'
 
 ''' ====================== MYSQL Cloud Connection ======================'''
 conn = pymysql.connect(
-    host='*****',
-    user='***',
-    password='****',
-    port = '***',
-    database='****'
+    host='db-mysql-nyc1-90916-do-user-13185754-0.b.db.ondigitalocean.com',
+    user='doadmin',
+    password='AVNS_7-uHJW2hWzJLqGwXdoE',
+    port = 25060,
+    database='defaultdb'
 )
 
 def main():
@@ -121,7 +121,7 @@ def add_post(post: PostSchema):
 
 @app.get('/gh-authorize')
 async def github_login():
-    return RedirectResponse(f'https://github.com/login/oauth/authorize?client_id={github_client_id}', status_code=302)
+    return RedirectResponse(f'https://github.com/login/oauth/authorize?client_id={github_client_id}&scope=repo', status_code=302)
 
 
 #TODO: "/callback" url should be added in amirta github oauth app settings
@@ -141,7 +141,9 @@ async def callback(request: Request):
         response = await client.post(url='https://github.com/login/oauth/access_token',params=params, headers=headers)
     
     response_json = response.json()
+    print(response_json)
     access_token=response_json['access_token']  
+    print(access_token)
 
     async with httpx.AsyncClient() as client:
         headers.update({'Authorization': f'Bearer {access_token}'})
