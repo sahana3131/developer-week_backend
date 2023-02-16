@@ -14,12 +14,12 @@ spec:
     spec:
       containers:
         - name: fastapi
-          image: ndrohith09/devcraftsman
+          image: ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
           ports:
             - containerPort: 8001
           env:
             - name: MYSQL_HOST
-              value: "*****"
+              value: USERNAME
             - name: MYSQL_DB
               value: "*****"
             - name: MYSQL_USER
