@@ -41,9 +41,9 @@ app.add_middleware(
 )
 
 
-github_client_id = '***'
-github_client_secret = '***'
-openai.api_key = '***'
+github_client_id = '4ec3dda0c792c1664242'
+github_client_secret = '710fee9e6229467422fa412bc603a5b43d8a0164'
+openai.api_key = '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'
 
 
 giturl = [
@@ -68,13 +68,12 @@ users = []
 
 ''' ====================== MYSQL Cloud Connection ======================'''
 conn = pymysql.connect(
-    host='***',
-    user='***',
-    password='***',
-    port = '***,
-    database='***'
+    host='db-mysql-nyc1-90916-do-user-13185754-0.b.db.ondigitalocean.com',
+    user='doadmin',
+    password='AVNS_7-uHJW2hWzJLqGwXdoE',
+    port = 25060,
+    database='defaultdb'
 )
-
 def main():
     try:
         cursor = conn.cursor()
@@ -267,6 +266,16 @@ async def generate(
             stop= None,
         ).choices[0].text.strip()) 
     return responses
+
+@app.post("/edit",status_code=200 , 
+        )
+async def edit(gh_token: str, repo: str, file: str, content: str):
+    gh = Github(gh_token)
+    repo = gh.get_repo(f"{gh.get_user().login}/{repo}") 
+
+    repo.update_file(file, "Update file", content, repo.get_contents(file).sha)
+    return {"status": "success"}
+
 
 if __name__ == "__main__":
     main()
