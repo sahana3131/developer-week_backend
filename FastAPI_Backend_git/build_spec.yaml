@@ -22,8 +22,8 @@ steps:
   - type: Command
     name: "Login to Docker"
     command: |
-    docker login -u  '$USERNAME' -p '$PASSWORD' hyd.ocir.io
-    docker tag REPOSITORY_URI:latest ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
+      docker login -u  $USERNAME -p $PASSWORD hyd.ocir.io
+      docker tag REPOSITORY_URI:latest ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
 
     timeoutInSeconds: 1000
   - type: Command
