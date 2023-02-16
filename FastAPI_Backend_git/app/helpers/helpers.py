@@ -122,3 +122,16 @@ def get_repo_content(gh, repo):
     }
 
     return data
+
+
+def generate_prompt(gh, repo, f):
+    content = get_file_content(gh, repo, f)
+    return """  prompt="# Explain this: \n{} \n\n#""".format(content)
+
+def generate_time_complexity(gh, repo, f):
+    content = get_file_content(gh, repo, f)
+    return """Calculate the time complexity of the following algorithm:\n{}\nTime complexity:""".format(content)
+
+def generate_debug(gh, repo, f):
+    content = get_file_content(gh, repo, f)
+    return """  prompt=##### Fix bugs in the below function\n \n### Buggy Python\n{}\n### Fixed Python""".format(content)

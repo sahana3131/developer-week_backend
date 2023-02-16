@@ -1,12 +1,50 @@
+
 import uvicorn
-from fastapi import FastAPI, Body, Depends, HTTPException
-from app.model import PostSchema, UserSchema, UserLoginSchema
+from fastapi import FastAPI ,Body, Depends, Request, Response, HTTPException 
+from app.model import PostSchema, UserSchema, UserLoginSchema, GenerateSchema
 from app.auth.auth_bearer import JWTBearer
-from app.auth.auth_handler import signJWT
+from app.auth.auth_handler import get_password_hash , signJWT , verify_password
+from app.helpers.helpers import *
 import httpx
 from starlette.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware 
+import mysql.connector
+import pymysql
+import requests
+from github import Github
+from pydantic import BaseSettings
 import openai
-import os
+
+
+class Settings(BaseSettings):
+    OPENAI_API_KEY: str = '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'
+    
+    class Config:
+        env_file = '.env'
+
+settings = Settings()
+
+app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    '*'
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+github_client_id = '4ec3dda0c792c1664242'
+github_client_secret = '710fee9e6229467422fa412bc603a5b43d8a0164'
+openai.api_key = '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'
+
 
 giturl = [
     {
@@ -28,26 +66,42 @@ giturl = [
 
 users = []
 
-app = FastAPI()
+''' ====================== MYSQL Cloud Connection ======================'''
+conn = pymysql.connect(
+    host='db-mysql-nyc1-90916-do-user-13185754-0.b.db.ondigitalocean.com',
+    user='doadmin',
+    password='AVNS_7-uHJW2hWzJLqGwXdoE',
+    port = 25060,
+    database='defaultdb'
+)
 
-github_client_id = '**********'
-github_client_secret = '**********'
-openai.api_key = '***********'
+def main():
+    try:
+        cursor = conn.cursor()
+        # cursor.execute("DROP TABLE users")
+        cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTO_INCREMENT, username TEXT , password TEXT)")  #MYSQL
+        conn.commit()
 
-def check_user(data: UserSchema):
-    for user in users:
-        if user.email == data.email and user.password == data.password:
-            return True
-    return False
+        print("Connection to MySQL DB successful")
+    except mysql.connector.Error as error: 
+        print(f"Failed to connect to MySQL: {error}")
+
+def get_db():
+    try:
+        return conn
+    except mysql.connector.Error as error:
+        raise HTTPException(status_code=500, detail="Unable to connect to the database")
 
 
 # route handlers
 
+''' ====================== Test Urls ======================'''
 # testing
 @app.get("/", tags=["test"])
 def greet():
     return {"hello": "world!."}
 
+''' ====================== CRUD Urls ======================'''
 
 # Get Posts
 @app.get("/giturl", tags=["giturl"])
@@ -77,71 +131,143 @@ def add_post(post: PostSchema):
         "data": "post added."
     }
 
-@app.get('/github-login')
-async def github_login():
-    return RedirectResponse(f'https://github.com/login/oauth/authorize?client_id={github_client_id}', status_code=302)
 
-@app.get('/github-code')
-async def github_code(code: str):
+''' ====================== Github OAUTH ======================'''
+
+@app.get('/gh-authorize')
+async def github_login():
+    return RedirectResponse(f'https://github.com/login/oauth/authorize?client_id={github_client_id}&scope=repo', status_code=302)
+
+
+#TODO: "/callback" url should be added in amirta github oauth app settings
+
+@app.get('/callback')
+async def callback(request: Request):
+    code = request.query_params.get("code")
+
     params = {
             'client_id' : github_client_id,
             'client_secret' : github_client_secret,
             'code' : code
         }
+    
     headers = {'Accept': 'application/json'}
     async with httpx.AsyncClient() as client:
         response = await client.post(url='https://github.com/login/oauth/access_token',params=params, headers=headers)
+    
     response_json = response.json()
-    access_token=response_json['access_token']
+    print(response_json)
+    access_token=response_json['access_token']  
+    print(access_token)
+
     async with httpx.AsyncClient() as client:
         headers.update({'Authorization': f'Bearer {access_token}'})
         response = await client.get('https://api.github.com/user', headers=headers)
-    return response.json() 
-
-# without db
-@app.post("/user/signup", tags=["user"])
-def create_user(user: UserSchema = Body(...)):
-    users.append(user) # replace with db call, making sure to hash the password first
-    return signJWT(user.email)
-
-
-@app.post("/user/login", tags=["user"])
-def user_login(user: UserLoginSchema = Body(...)):
-    if check_user(user):
-        return signJWT(user.email)
+    print(response.json())
     return {
-        "error": "Wrong login details!"
+        "gh_token" : access_token
     }
 
 
-@app.get("/explain_code")
-async def explain_code(code: str):
-    prompt = f"Please explain the following code:\n\n{code}"
-    response = openai.Completion.create(
-        engine="davinci-codex",
-        prompt=prompt,
-        max_tokens=1024,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-    explanation = response.choices[0].text.strip()
-    return {"explanation": explanation}
+''' ====================== User AUTH ======================'''
 
-@app.get("/time-complexity")
-async def get_time_complexity(algorithm: str):
-    prompt = f"Calculate the time complexity of the following algorithm:\n{algorithm}\nTime complexity:"
-    response = openai.Completion.create(
-        engine="davinci",
-        prompt=prompt,
-        max_tokens=50,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
+@app.post("/register", tags=["user"])
+def create_user(user: UserSchema = Body(...) , conn: mysql.connector.MySQLConnection = Depends(get_db)):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    if any(x[1] == user.username for x in users):
+        raise HTTPException(status_code=400, detail='Username already exists') 
+    
+    print("160",user.password , user.username) 
+    hashed_password = get_password_hash(user.password)  
 
-    # Extract time complexity from response
-    time_complexity = response.choices[0].text.strip()
+    cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (user.username, hashed_password))  
+    conn.commit() 
+    
+    return signJWT(user.username)
 
-    # Return time complexity
-    return {"time_complexity": time_complexity}
+
+@app.post("/login", tags=["user"])
+def user_login(auth_details: UserLoginSchema = Body(...),conn: mysql.connector.MySQLConnection = Depends(get_db)):
+    
+    cursor = conn.cursor()
+    user = None
+
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()  
+    print("173",users)
+    for x in users:
+        print(x[1] , x[2], auth_details.username)
+        if x[1] == auth_details.username:
+            user = x 
+            break
+    if (user is None) or (not verify_password(auth_details.password, user[2])):
+        raise HTTPException(status_code=401, detail='Invalid username and/or password')
+    return signJWT(user[1])
+
+''' ====================== Github API urls ======================'''
+@app.get("/file-content",
+        status_code=200 , 
+        dependencies=[Depends(JWTBearer())],
+        tags=["github"]
+        )
+async def content(gh_token: str, repo: str , file : str):
+    gh = Github(gh_token)
+    return get_file_content(gh, repo , file)
+
+@app.get("/repo", status_code=200 , 
+        dependencies=[Depends(JWTBearer())],
+        tags=["github"]
+         )
+async def repos(gh_token: str): 
+    gh = Github(gh_token)
+    return get_repos(gh)
+
+@app.get("/content" , status_code=200 ,
+        dependencies=[Depends(JWTBearer())],
+        tags=["github"]
+         )
+async def content(gh_token: str, repo: str):
+    gh = Github(gh_token)
+    return get_repo_content(gh, repo)
+
+@app.post("/generate")
+async def generate(
+    schema: GenerateSchema = Body(...),
+    dependencies=[Depends(JWTBearer())],
+    tags=["github"]
+    ):
+    responses = []
+    gh = Github(schema.gh_token)
+    for f in schema.files:
+        responses.append(openai.Completion.create(
+            model="text-davinci-002",
+            prompt=generate_prompt(gh, schema.repo, f),
+            max_tokens=1024,
+            n=1,
+            stop=None,
+            temperature=0.5,
+        ).choices[0].text.strip())
+
+        responses.append(openai.Completion.create(
+            engine="davinci",
+            prompt=generate_time_complexity(gh, schema.repo, f),
+            max_tokens=50,
+            n=1,
+            stop=None,
+            temperature=0.5, 
+        ).choices[0].text.strip()) 
+
+        responses.append(openai.Completion.create(
+            engine = "davinci",
+            prompt=generate_debug(gh, schema.repo, f),
+            temperature=0.5, 
+            n=1,
+            stop= None,
+        ).choices[0].text.strip()) 
+    return responses
+
+if __name__ == "__main__":
+    main()
+    uvicorn.run(app, host='0.0.0.0', port=8000)

@@ -14,6 +14,11 @@ class PostSchema(BaseModel):
         }
 
 
+class GenerateSchema(BaseModel):
+    gh_token: str
+    repo: str
+    files: list[str]  
+    
 class UserSchema(BaseModel):
     username: str = Field(...) 
     password: str = Field(...)
