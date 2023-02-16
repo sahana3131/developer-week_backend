@@ -4,10 +4,10 @@ timeoutInSeconds: 1000
 shell: bash
 
 steps:
-  - type: Command
-    name: "Install dependencies"
-    command: |
-      pip install -r FastAPI_Backend_git/requirements.txt
+  # - type: Command
+  #   name: "Install dependencies"
+  #   command: |
+  #     pip install -r FastAPI_Backend_git/requirements.txt
   - type: Command
     name: "Test Script"
     command: |
