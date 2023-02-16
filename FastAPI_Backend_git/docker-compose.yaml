@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  fastapi:
+    build: ./
+    # image: <image_name>
+    ports:
+      - 8001:8001
+    environment:
+      - MYSQL_HOST=*****
+      - MYSQL_USER=*****
+      - MYSQL_DB=*****
+      - MYSQL_PASSWORD=*****
+      - GH_CLIENT_ID=*****
+      - GH_SECRET_ID=*****
+      - OPENAI_API_KEY=*****

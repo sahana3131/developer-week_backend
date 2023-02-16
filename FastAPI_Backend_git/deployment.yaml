@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devcraftsman-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: fastapi
+          image: ndrohith09/devcraftsman
+          ports:
+            - containerPort: 8001
+          env:
+            - name: MYSQL_HOST
+              value: "*****"
+            - name: MYSQL_DB
+              value: "*****"
+            - name: MYSQL_USER
+              value: "*****"
+            - name: MYSQL_PASSWORD
+              value: "*****"
+            - name: GH_CLIENT_ID
+              value : "*****"
+            - name: GH_SECRET_ID
+              value : "*****" 
+            - name: OPENAI_API_KEY
+              value : "*****"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devcraftsman-service
+spec:
+  selector:
+    app: fastapi
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8001
+  type: LoadBalancer
