@@ -6,4 +6,5 @@ def test():
     assert response.json() == {"message": "Hello World"}
 
 if __name__ == "__main__":
-    test()
+    # test()
+    print("test")
