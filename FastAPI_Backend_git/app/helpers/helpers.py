@@ -6,16 +6,20 @@ def get_file_content(gh, repo, get_file):
     return gh.get_repo(f"{gh.get_user().login}/{repo}").get_contents(get_file).decoded_content.decode()
 
 def get_files(gh, repo):
-    return [{"file":file.name} for file in gh.get_repo(f"{gh.get_user().login}/{repo}").get_contents("/")]
+    return [
+        {"file":file.name , 
+         "type" : file.type} for file in gh.get_repo(f"{gh.get_user().login}/{repo}").get_contents("/")
+        ]
 
-def get_repos(gh):
-    print('get_repos')
+def get_repos(gh): 
     return {
          'user' : gh.get_user().login,
-        'repo': [{"repo": f"{repo.name}"} for repo in gh.get_user().get_repos() ]
+        'repo': [{"repo": f"{repo.name}",
+                  "private" : f"{repo.private}",
+                  "full_name" : f"{repo.full_name}",
+                  } for repo in gh.get_user().get_repos() ]
 
     }
-
 def get_visitors(repo):
     timestamp = []
     count = []
