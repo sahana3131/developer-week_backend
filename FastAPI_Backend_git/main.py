@@ -30,11 +30,9 @@ users = []
 
 app = FastAPI()
 
-#github_client_id = '**********'
-#github_client_secret = '**********'
-github_client_id = 'b0a94e000593ed9730a0'
-github_client_secret = '6a996f48c85b58803ccbd4674fdd87bc468b195f'
-openai.api_key = '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'
+github_client_id = '**********'
+github_client_secret = '**********'
+openai.api_key = '***********'
 
 def check_user(data: UserSchema):
     for user in users:
