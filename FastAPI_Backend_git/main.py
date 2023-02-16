@@ -14,15 +14,7 @@ import requests
 from github import Github
 from pydantic import BaseSettings
 import openai
-
-
-class Settings(BaseSettings):
-    OPENAI_API_KEY: str = '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'
-    
-    class Config:
-        env_file = '.env'
-
-settings = Settings()
+import os
 
 app = FastAPI()
 
@@ -39,13 +31,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-
-github_client_id = '***'
-github_client_secret = '***'
-openai.api_key = '***'
-
 
 giturl = [
     {
@@ -68,13 +53,19 @@ giturl = [
 users = []
 
 ''' ====================== MYSQL Cloud Connection ======================'''
+
 conn = pymysql.connect(
-    host='*****',
-    user='***',
-    password='****',
-    port = '***',
-    database='****'
+    host = os.environ['MYSQL_HOST'],
+    user=os.environ['MYSQL_USER'],
+    password=os.environ['MYSQL_PASSWORD'],
+    port = 25060,
+    database=os.environ['MYSQL_DB']
 )
+
+github_client_id = os.environ['GH_CLIENT_ID']
+github_client_secret = os.environ['GH_SECRET_ID']
+openai.api_key = os.environ['OPENAI_API_KEY']
+
 
 def main():
     try:
@@ -245,7 +236,7 @@ async def generate(
         responses.append(openai.Completion.create(
             model="text-davinci-002",
             prompt=generate_prompt(gh, schema.repo, f),
-            max_tokens=1024,
+            # max_tokens=1024,
             n=1,
             stop=None,
             temperature=0.5,
@@ -254,7 +245,7 @@ async def generate(
         responses.append(openai.Completion.create(
             engine="davinci",
             prompt=generate_time_complexity(gh, schema.repo, f),
-            max_tokens=50,
+            # max_tokens=50,
             n=1,
             stop=None,
             temperature=0.5, 
@@ -274,11 +265,10 @@ async def generate(
 async def edit(gh_token: str, repo: str, file: str, content: str):
     gh = Github(gh_token)
     repo = gh.get_repo(f"{gh.get_user().login}/{repo}") 
-
-    repo.update_file(file, "Update file", content, repo.get_contents(file).sha)
+    repo.update_file(file, "Update file", content.encode(), repo.get_contents(file).sha)
     return {"status": "success"}
 
 
 if __name__ == "__main__":
     main()
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    uvicorn.run(app, host='0.0.0.0', port=8001)
