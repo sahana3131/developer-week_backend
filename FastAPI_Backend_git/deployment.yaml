@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: devcraftsman-deployment
+  name: devcraftsman-api-deployment
 spec:
   replicas: 2
   selector:
@@ -19,25 +19,25 @@ spec:
             - containerPort: 8001
           env:
             - name: MYSQL_HOST
-              value: USERNAME
+              value: $MYSQL_HOST
             - name: MYSQL_DB
-              value: "*****"
+              value: $MYSQL_DB
             - name: MYSQL_USER
-              value: "*****"
+              value: $MYSQL_USER
             - name: MYSQL_PASSWORD
-              value: "*****"
+              value: $MYSQL_PASSWORD
             - name: GH_CLIENT_ID
-              value : "*****"
+              value : $GH_CLIENT_ID
             - name: GH_SECRET_ID
-              value : "*****" 
+              value : $GH_SECRET_ID
             - name: OPENAI_API_KEY
-              value : "*****"
+              value : $OPENAI_API_KEY
       restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: devcraftsman-service
+  name: devcraftsman-api-service
 spec:
   selector:
     app: fastapi
