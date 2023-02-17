@@ -123,15 +123,18 @@ def get_repo_content(gh, repo):
 
     return data
 
-
 def generate_prompt(gh, repo, f):
     content = get_file_content(gh, repo, f)
-    return """  prompt="# Explain this: \n{} \n\n#""".format(content)
+    return "{}\n\"\"\"\nHere's what the above program is doing:\n1.".format(content)
 
 def generate_time_complexity(gh, repo, f):
     content = get_file_content(gh, repo, f)
-    return """Calculate the time complexity of the following algorithm:\n{}\nTime complexity:""".format(content)
+    return "{}\"\"\"\nThe time complexity of this program is".format(content)
+
+import io
+import mypy.api
 
 def generate_debug(gh, repo, f):
     content = get_file_content(gh, repo, f)
-    return """  prompt=##### Fix bugs in the below function\n \n### Buggy Python\n{}\n### Fixed Python""".format(content)
+    result, _, _ = mypy.api.run(args=["-c", content, "--ignore-missing-imports"])
+    return result

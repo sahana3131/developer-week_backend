@@ -28,7 +28,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    access_control = True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -234,31 +233,61 @@ async def generate(
     responses = []
     gh = Github(schema.gh_token)
     for f in schema.files:
-        responses.append(openai.Completion.create(
-            model="text-davinci-002",
+        responses.append("1. "+openai.Completion.create(
+            model="code-davinci-002",
             prompt=generate_prompt(gh, schema.repo, f),
-            # max_tokens=1024,
-            n=1,
-            stop=None,
-            temperature=0.5,
+            temperature=0,
+            max_tokens=2011,
+            top_p=1.0,
+            frequency_penalty=0.0,
+            presence_penalty=0.0,
+            stop=["\"\"\""]
         ).choices[0].text.strip())
-
+        
         responses.append(openai.Completion.create(
-            engine="davinci",
+            engine="text-davinci-003",
             prompt=generate_time_complexity(gh, schema.repo, f),
-            # max_tokens=50,
-            n=1,
-            stop=None,
-            temperature=0.5, 
+            temperature=0,
+            max_tokens=2011,
+            top_p=1.0,
+            frequency_penalty=0.0,
+            presence_penalty=0.0
         ).choices[0].text.strip()) 
 
-        responses.append(openai.Completion.create(
-            engine = "davinci",
-            prompt=generate_debug(gh, schema.repo, f),
-            temperature=0.5, 
-            n=1,
-            stop= None,
-        ).choices[0].text.strip()) 
+        if(f.split(".")[-1] == "py"):
+            responses.append(generate_debug(gh, schema.repo, f))
+
+    return responses
+import random
+@app.post("/generate-multiple")
+async def generate_multiple(
+    schema: GenerateSchema = Body(...),
+    dependencies=[Depends(JWTBearer())],
+    tags=["github"]
+    ):
+    responses = []
+    gh = Github(schema.gh_token)
+
+    # Limiting files to 4, because of the free tier of openai
+    accepted_extensions = ["py", "js", "java", "cpp", "c", "cs", "go", "php", "rb", "swift", "scala", "ts"]
+    schema.files = [f for f in schema.files if f.split(".")[-1] in accepted_extensions]
+    if(len(schema.files)!=0):
+        if(len(schema.files)>3):
+            schema.files = random.sample(schema.files, 3)
+        for f in schema.files:
+            responses.append(f"\nIn {f},\n 1. "+openai.Completion.create(
+                model="code-davinci-002",
+                prompt=generate_prompt(gh, schema.repo, f),
+                temperature=0,
+                max_tokens=2011,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                stop=["\"\"\""]
+            ).choices[0].text.strip())
+    else:
+        return "No files found with accepted extensions (py, js, java, cpp, c, cs, go, php, rb, swift, scala, ts)"
+
     return responses
 
 @app.post("/edit",status_code=200 , 
