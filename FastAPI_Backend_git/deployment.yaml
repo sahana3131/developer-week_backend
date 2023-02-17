@@ -43,7 +43,7 @@ spec:
   selector:
     app: devcm-api
   ports:
-    - name: http
-      port: 8001
+    # - name: http
+    - port: 8001
       targetPort: 8001
   type: LoadBalancer
