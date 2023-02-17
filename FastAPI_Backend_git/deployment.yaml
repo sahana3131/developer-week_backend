@@ -1,20 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: devcraftsman-api-deployment
+  name: devcm-api-deployment
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: fastapi
+      app: devcm-api
   template:
     metadata:
       labels:
-        app: fastapi
+        app: devcm-api
     spec:
       containers:
-        - name: fastapi
-          image: ap-hyderabad-1.ocir.io/$TENANCY_NAME/$NAMESPACE/REPOSITORY_URI:latest
+        - name: devcm-api
+          image: $DOC_USERNAME/$REPOSITORY_URI
+          imagePullPolicy: Always
           ports:
             - containerPort: 8001
           env:
@@ -37,10 +38,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: devcraftsman-api-service
+  name: devcm-api-service
 spec:
   selector:
-    app: fastapi
+    app: devcm-api
   ports:
     - name: http
       port: 8001
