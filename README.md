@@ -1,4 +1,4 @@
-# developer-week_backend files
+# DevCraftsMan
 Try out the application at: http://152.70.64.98/
 
 ## Inspiration
