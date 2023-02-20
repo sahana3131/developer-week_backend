@@ -23,7 +23,7 @@ On the frontend, we utilized ReactJS to create an intuitive and responsive user 
 
 To deploy the tool, we utilized Docker, which allowed us to easily package and distribute the application. We deployed DevCraftsman in Oracle Cloud by creating a Kubernetes cluster, which we provisioned using Terraform. This allowed us to easily manage and scale our deployment, ensuring optimal performance and reliability for our users. The devops services used are Oracle Container Registry, Oracle MYSQL cluster, Oracle Kubernetes Cluster, Oracle CLI (oci), OCI Devops (build pipeline and deploy pipeline).
 
-##Cloud Architecture
+## Cloud Architecture
 
 ![WhatsApp Image 2023-02-17 at 8 03 59 PM](https://user-images.githubusercontent.com/73429989/219741953-c0b1a777-c5d6-4b36-8501-8eeeea432be0.jpeg)
 
